@@ -1,0 +1,15 @@
+@import '~grommet/scss/vanilla/index';
+
+.textColor {
+    color:white;
+    height: 200px;
+    width: 300px;
+}
+.grommetux-header {
+    min-height: 20px;
+}
+.grommetux-map__category-label {
+    line-height: 0;
+    margin-bottom: 0px;
+    font-size: 25px;
+}
