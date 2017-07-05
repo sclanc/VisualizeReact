@@ -17,9 +17,55 @@ import Paragraph from 'grommet/components/Paragraph';
 import LoginIcon from 'grommet/components/icons/base/Login'
 import SVGIcon from 'grommet/components/SVGIcon';
 import AddCircleIcon from 'grommet/components/icons/base/AddCircle';
-import { Provider } from 'react-redux';
+import AddIcon from 'grommet/components/icons/base/Add';
+import Button from 'grommet/components/Button'
+import LoginForm from 'grommet/components/LoginForm';
+import Anchor from 'grommet/components/Anchor';
+import Toast from 'grommet/components/Toast';
+import FormPreviousLinkIcon from 'grommet/components/icons/base/FormPreviousLink';
+import * as firebase from 'firebase'
+
+
+firebase.initializeApp({
+  apiKey: "AIzaSyC2o4AqmsjFAtYWpzp2qhzGwD99_ein2Ik",
+  authDomain: "visualizereact.firebaseapp.com",
+  databaseURL: "https://visualizereact.firebaseio.com",
+  projectId: "visualizereact",
+  storageBucket: "visualizereact.appspot.com",
+  messagingSenderId: "11669710690"
+});
+
 
 class VisualizeReact extends React.Component {
+  constructor() {
+    super();
+    this.addItem = this.addItem.bind(this);
+
+    this.state = {
+      enumRender: 0,
+      user: null
+    };
+  }
+
+  componentDidMount() {
+    var userCheck = setInterval(() => this.setState({user:firebase.auth().currentUser}), 500);
+  }
+
+  componentWillUnmount() {
+    clearInterval(userCheck);
+  }
+
+  updateUser(signedInUser) {
+    this.setState({user:SignedInUser})
+  }
+  
+
+  addItem(num) {
+    this.setState({enumRender:num});
+  };
+
+
+
   render() {
     return(
       <App centered={false}>
@@ -34,14 +80,42 @@ class VisualizeReact extends React.Component {
                 </Title>
               </Header>
               <Box flex='grow'
-                justify='start'>
-                <Menu primary={true}>
-                  <AddCircleIcon />
+                >
+                <Menu primary={true}
+                  icon={
+                    <Box alignContent='center'
+                      justify='between'
+                      align='center'
+                      alignSelf='center'>
+                      <AddCircleIcon size='large'/>
+                    </Box>}
+                  inline={true}
+                >
+                  <Button
+                    label={<Label text='Project'/>}
+                    onClick={() => this.addItem(3)}
+                    plain={true}
+                    />
+                  <Button
+                    label={<Label text='Store Provider'/>}
+                    onClick={() => this.addItem(1)}
+                    plain={true}
+                    />
+                  <Button
+                    label={<Label text='Container'/>}
+                    onClick={() => this.addItem(2)}
+                    plain={true}
+                    />
+                  <Button
+                    label={<Label text='Component'/>}
+                    onClick={() => this.addItem(3)}
+                    plain={true}
+                    />
                 </Menu>
               </Box>
-              <Footer pad='medium'>
-                <LoginIcon />
-              </Footer>
+              <FooterUI
+                user={this.state.user}>
+              </FooterUI>
             </Sidebar>
           </Box>
           <Box colorIndex='grey-2'
@@ -51,37 +125,37 @@ class VisualizeReact extends React.Component {
             justify='center'
           >
           <Map data={{
-            "categories":[
-              {
-                "id":"c1",
-                "label":"Root",
-                "items":[
-                  {
-                    "id": "i1",
-                    "label": "<Test/>",
-                    "node":<Component/>
-                  }
-                ]
-              },
-              {
-                "id":"c2",
-                "label":"Children",
-                "items":[
-                  {
-                    "id": "i2",
-                    "label": "<TestChild/>",
-                    "node":<Component/>
-                  }
-                ]
-              }
-            ],
-            "links": [
-              {
-                "parentId":"i1",
-                "childId":"i2"
-              }
-            ]
-          }}
+    "categories":[
+        {
+        "id":"c1",
+        "label":"Root",
+        "items":[
+            {
+            "id": "i1",
+            "label": "<Test/>",
+            "node":<Component/>
+            }
+        ]
+        },
+        {
+        "id":"c2",
+        "label":"Children",
+        "items":[
+            {
+            "id": "i2",
+            "label": "<TestChild/>",
+            "node":<Component/>
+            }
+        ]
+        }
+    ],
+    "links": [
+        {
+        "parentId":"i1",
+        "childId":"i2"
+        }
+    ]
+}}
           />
           </Box>
         </Split>
@@ -89,6 +163,79 @@ class VisualizeReact extends React.Component {
     );
   }
 }
+
+class FooterUI extends React.Component {
+  constructor(props) {
+    super(props);
+    this.toggleloggingIn = this.toggleloggingIn.bind(this);
+    this.renderLoginMenu = this.renderLoginMenu.bind(this);
+    this.renderLogin = this.renderLogin.bind(this);
+    this.state = {
+      loggingIn: false,
+      createAccount: false,
+    }
+  }
+
+  renderLoginMenu() {
+    return (
+      <div className="logInMenu">
+        <Menu
+        colorIndex='neutral-1'
+          icon={<LoginIcon /> }
+        >
+          <Button
+            plain={true}
+            onClick={() => this.toggleloggingIn()}
+          >
+          Log in
+          </Button>
+          <Button 
+            plain={true}
+            onClick={() => this.toggleloggingIn(true)}>
+            Create an Account
+            </Button>
+        </Menu>
+      </div>
+    )
+  }
+
+  renderLogin() {
+    return(
+      <LogInHandler create={this.state.createAccount}
+        back={() =>this.toggleloggingIn()}
+      />
+    )
+  }
+
+  toggleloggingIn(create) {
+    this.setState({
+      loggingIn: !this.state.loggingIn,
+      createAccount: create
+    });
+  }
+
+  render() {
+    if(!this.props.user) {
+      return (
+        <Footer pad='medium'>
+          {this.state.loggingIn ? this.renderLogin(): this.renderLoginMenu()}
+        </Footer>
+      )
+    } else {
+      if(this.props.user) {
+        return(
+        <Footer pad='medium'>
+          <Button 
+            label='Sign Out'
+            onClick={() => firebase.auth().signOut()}
+          />
+        </Footer>
+        )
+      }
+    }
+  }
+}
+
 
 class Component extends React.Component {
   render() {
@@ -125,6 +272,86 @@ class ComponentDetails extends React.Component {
         </AccordionPanel>
       </Accordion>
     );
+  }
+}
+
+
+
+class LogInHandler extends React.Component {
+  constructor(props) {
+    super(props);
+    this.login = this.login.bind(this);
+    this.createAccount = this.createAccount.bind(this);
+    this.clearErrors = this.clearErrors.bind(this);
+    this.forgotPassword = this.forgotPassword.bind(this);
+    this.state =  {
+      errorText:'',
+      successText:''
+    }
+  }
+
+  login(credentials) {
+    firebase.auth().signInWithEmailAndPassword(credentials.username, credentials.password).catch((error) => {
+      this.setState({errorText:error.message});
+    });
+  }
+
+  createAccount(credentials) {
+    firebase.auth().createUserWithEmailAndPassword(credentials.username, credentials.password).catch((error) =>{
+      this.setState({errorText:error.message});
+    });
+  }
+
+  clearErrors() {
+    this.setState({errorText:''})
+  }
+
+  forgotPassword() {
+    var emailAddress = "user@example.com";
+    auth.sendPasswordResetEmail(emailAddress).then(function() {
+      // Email sent.
+    }, function(error) {
+      // An error happened.
+    });
+    //add functionality and add a view to get the email address for this function.
+  }
+
+  render() {
+    if(!this.props.create) {
+      return (
+        <div className='loginHandler'>
+          <Button icon={<FormPreviousLinkIcon />}
+            onClick={() => this.props.back(false)}
+          />
+          <LoginForm onSubmit={(credentials) => this.login(credentials)} 
+          forgotPassword={<Button
+          label='Forgot password?'
+          onClick={this.ForgotPassword} />}
+          />
+          { this.state.errorText !== '' ? <Toast status='critical'
+          onClose={() => this.clearErrors()}>
+          {this.state.errorText}
+          </Toast> : null}
+        </div>
+      )
+    } else {
+      if(this.props.create) {
+        return (
+        <div className='loginHandler'>
+          <Button icon={<FormPreviousLinkIcon />}
+            onClick={() => this.props.back(false)}
+          />
+          <LoginForm onSubmit={(credentials) => this.createAccount(credentials)} 
+            secondaryText='Press Log In to create an account and log in'
+          />
+          { this.state.errorText !== '' ? <Toast status='critical'
+          onClose={() => this.clearErrors()}>
+          {this.state.errorText}
+          </Toast> : null}
+        </div>
+        )
+      }
+    }
   }
 }
 
@@ -176,7 +403,17 @@ class ReactLogo extends React.Component {
 }
 
 
+class Label extends React.Component {
+  render() {
+    return (
+      <div>
+        <AddIcon size='xsmall'/> {this.props.text}
+      </div>
+    );
+  }
+}
+
 
 export default () => (
-  <VisualizeReact/>
+    <VisualizeReact/>
 );

@@ -51,6 +51,7 @@
     "eslint-plugin-jsx-a11y": "^2.2.3",
     "eslint-plugin-react": "^6.6.0",
     "file-loader": "^0.9.0",
+    "firebase": "^4.1.3",
     "grommet-cli": "^3.0.0",
     "json-loader": "^0.5.4",
     "node-sass": "^4.1.1",
